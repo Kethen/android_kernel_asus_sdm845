@@ -89,6 +89,25 @@ static void lz4_free(void *strm)
 	kfree(stream);
 }
 
+// partially grafting 2f2ad324b7046b4c80986938142984322660a6e2 here, since things weren't updated here, but lz4 was
+static int lz4_decompress_unknownoutputsize(const unsigned char *src,
+	size_t src_len, unsigned char *dest, size_t *dest_len) {
+	*dest_len = LZ4_decompress_safe(src, dest,
+	       src_len, *dest_len);
+
+	/*
+	* Prior lz4_decompress_unknownoutputsize will return
+	* 0 for success and a negative result for error
+	* new LZ4_decompress_safe returns
+	* - the length of data read on success
+	* - and also a negative result on error
+	* meaning when result > 0, we just return 0 here
+	*/
+	if (src_len > 0)
+		return 0;
+	else
+		return -1;
+}
 
 static int lz4_uncompress(struct squashfs_sb_info *msblk, void *strm,
 	struct buffer_head **bh, int b, int offset, int length,
