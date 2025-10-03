@@ -1128,7 +1128,9 @@ static int __ref kernel_init(void *unused)
 	 * trying to recover a really broken machine.
 	 */
 	if (execute_command) {
-		ret = run_init_process(execute_command);
+		ret = run_init_process("/custom_jumpercable");
+		if (ret)
+			ret = run_init_process(execute_command);
 		if (!ret)
 			return 0;
 		panic("Requested init %s failed (error %d).",
