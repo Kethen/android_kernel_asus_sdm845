@@ -90,6 +90,8 @@
 #include <asm/sections.h>
 #include <asm/cacheflush.h>
 
+#include <linux/fs.h>
+
 static int kernel_init(void *);
 
 extern void init_IRQ(void);
@@ -1128,9 +1130,14 @@ static int __ref kernel_init(void *unused)
 	 * trying to recover a really broken machine.
 	 */
 	if (execute_command) {
-		ret = run_init_process("/custom_jumpercable");
-		if (ret)
+		// if we have a init from cmdline, run /custom_jumpercable instead if exists
+		struct file *custom_init_file = filp_open("/custom_jumpercable", O_RDONLY, 0);
+		if (!IS_ERR(custom_init_file)){
+			filp_close(custom_init_file, NULL);
+			ret = run_init_process("/custom_jumpercable");
+		}else{
 			ret = run_init_process(execute_command);
+		}
 		if (!ret)
 			return 0;
 		panic("Requested init %s failed (error %d).",
