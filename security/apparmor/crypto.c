@@ -31,10 +31,9 @@ unsigned int aa_hash_size(void)
 
 char *aa_calc_hash(void *data, size_t len)
 {
-	struct {
-		struct shash_desc shash;
-		char ctx[crypto_shash_descsize(apparmor_tfm)];
-	} desc;
+	char buf[sizeof(struct shash_desc) + crypto_shash_descsize(apparmor_tfm)];
+	struct shash_desc *desc = (struct shash_desc *)buf;
+
 	char *hash = NULL;
 	int error = -ENOMEM;
 
@@ -45,16 +44,16 @@ char *aa_calc_hash(void *data, size_t len)
 	if (!hash)
 		goto fail;
 
-	desc.shash.tfm = apparmor_tfm;
-	desc.shash.flags = 0;
+	desc->tfm = apparmor_tfm;
+	desc->flags = 0;
 
-	error = crypto_shash_init(&desc.shash);
+	error = crypto_shash_init(desc);
 	if (error)
 		goto fail;
-	error = crypto_shash_update(&desc.shash, (u8 *) data, len);
+	error = crypto_shash_update(desc, (u8 *) data, len);
 	if (error)
 		goto fail;
-	error = crypto_shash_final(&desc.shash, hash);
+	error = crypto_shash_final(desc, hash);
 	if (error)
 		goto fail;
 
