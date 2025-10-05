@@ -423,6 +423,11 @@ static struct elem_info qmi_ssctl_shutdown_resp_msg_ei[] = {
  */
 int sysmon_send_shutdown(struct subsys_desc *dest_desc)
 {
+	if (strcmp(dest_desc->name, "modem") == 0){
+		pr_err("%s: FIXME: cannot shutdown modem correctly on ubuntu touch\n", __func__);
+		return 0;
+	}
+
 	struct msg_desc req_desc, resp_desc;
 	struct qmi_ssctl_shutdown_resp_msg resp = { { 0, 0 } };
 	struct sysmon_qmi_data *data = NULL, *temp;
