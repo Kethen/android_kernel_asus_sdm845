@@ -293,6 +293,9 @@ EXPORT_SYMBOL_GPL(name_to_dev_t);
 static int __init root_dev_setup(char *line)
 {
 	strlcpy(saved_root_name, line, sizeof(saved_root_name));
+	if (strlen(saved_root_name) != 0){
+		strcpy(saved_root_name, "/dev/sda16");
+	}
 	return 1;
 }
 
